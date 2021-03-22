@@ -53,15 +53,13 @@ fn try_send(
     info: MessageInfo,
     recipients: Vec<RecipientInfo>,
 ) -> Result<HandleResponse, ContractError> {
-    for recipient in recipients.iter() {
-        return match recipient {
-            _ => send_tokens(
-                env.contract.address,
-                recipient.clone().address,
-                recipient.clone().amount,
-                "send",
-            ),
-        };
+    for recipient in recipients {
+        send_tokens(
+            env.clone().contract.address,
+            recipient.clone().address,
+            recipient.clone().amount,
+            "send",
+        );
     }
 
     Ok(HandleResponse {
@@ -153,7 +151,6 @@ fn send_tokens(
 
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        
     }
 }
 
