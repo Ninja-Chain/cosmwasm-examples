@@ -7,7 +7,7 @@ use crate::error::ContractError;
 // use crate::msg::{ArbiterResponse, HandleMsg, InitMsg, QueryMsg};
 // use crate::state::{config, config_read, State};
 use crate::msg::{HandleMsg, InitMsg, QueryMsg};
-use crate::state::{config_read, State,RecipientInfo};
+use crate::state::{RecipientInfo};
 
 pub fn init(
     deps: DepsMut,
@@ -40,18 +40,16 @@ pub fn handle(
     info: MessageInfo,
     msg: HandleMsg,
 ) -> Result<HandleResponse, ContractError> {
-    let state = config_read(deps.storage).load()?;
     match msg {
         // HandleMsg::Approve { quantity } => try_approve(deps, env, state, info, quantity),
         // HandleMsg::Refund {} => try_refund(deps, env, info, state),
-        HandleMsg::Send { recipients } => try_send(deps, env, state, info, recipients),
+        HandleMsg::Send { recipients } => try_send(deps, env, info, recipients),
     }
 }
 
 fn try_send(
     deps: DepsMut,
     env: Env,
-    state: State,
     info: MessageInfo,
     recipients: Vec<RecipientInfo>,
 ) -> Result<HandleResponse, ContractError> {
