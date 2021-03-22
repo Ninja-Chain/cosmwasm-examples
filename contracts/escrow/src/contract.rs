@@ -56,7 +56,7 @@ fn try_send(
     for recipient in recipients.iter() {
         return match recipient {
             _ => send_tokens(
-                info.sender,
+                env.contract.address,
                 recipient.clone().address,
                 recipient.clone().amount,
                 "send",
