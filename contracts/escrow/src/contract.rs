@@ -53,10 +53,10 @@ fn try_send(
     info: MessageInfo,
     recipients: Vec<RecipientInfo>,
 ) -> Result<HandleResponse, ContractError> {
-    for recipient in recipients.iter() {
-        return match recipient {
+    for recipient in recipients {
+        match recipient {
             _ => send_tokens(
-                env.contract.address,
+                env.clone().contract.address,
                 recipient.clone().address,
                 recipient.clone().amount,
                 "send",
