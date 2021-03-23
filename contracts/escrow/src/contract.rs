@@ -1,6 +1,6 @@
 use cosmwasm_std::{
     attr, to_binary, BankMsg, Binary, Coin, CosmosMsg, Deps, DepsMut, Env, HandleResponse,
-    HumanAddr, InitResponse, MessageInfo, StdResult,
+    HumanAddr, InitResponse, MessageInfo, StdResult, Uint128,
 };
 
 use crate::error::ContractError;
@@ -43,16 +43,12 @@ pub fn handle(
     match msg {
         // HandleMsg::Approve { quantity } => try_approve(deps, env, state, info, quantity),
         // HandleMsg::Refund {} => try_refund(deps, env, info, state),
-        HandleMsg::Send { recipients } => try_send(env, recipients),
+        HandleMsg::Send { recipients } => try_send(env, info, recipients),
     }
 }
 
-fn try_send(env: Env, recipients: Vec<RecipientInfo>) -> Result<HandleResponse, ContractError> {
-    send_tokens(
-        env.clone().contract.address,
-        recipients,
-        "send",
-    )
+fn try_send(env: Env, info: MessageInfo, recipients: Vec<RecipientInfo>) -> Result<HandleResponse, ContractError> {
+    send_tokens(env.clone().contract.address, recipients, info.sent_funds, "send")
 }
 
 // fn try_approve(
@@ -118,12 +114,15 @@ fn try_send(env: Env, recipients: Vec<RecipientInfo>) -> Result<HandleResponse, 
 fn send_tokens(
     from_address: HumanAddr,
     recipients: Vec<RecipientInfo>,
+    sent_funds: Vec<Coin>,
     action: &str,
 ) -> Result<HandleResponse, ContractError> {
     let mut attributes = Vec::new();
     let mut messages = Vec::new();
+    let mut total = Uint128::zero();
 
     for recipient in recipients {
+        total += recipient.clone().amount[0].amount;
         attributes.push(attr("action", action));
         attributes.push(attr("to", recipient.clone().address));
         messages.push(CosmosMsg::Bank(BankMsg::Send {
@@ -131,6 +130,10 @@ fn send_tokens(
             to_address: recipient.clone().address,
             amount: recipient.amount,
         }));
+    }
+
+    if sent_funds[0].amount != total {
+        return Err(ContractError::NotEqual {});
     }
 
     let r = HandleResponse {

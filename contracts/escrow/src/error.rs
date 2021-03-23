@@ -17,4 +17,7 @@ pub enum ContractError {
 
     #[error("Escrow not expired")]
     NotExpired {},
+
+    #[error("sent_funds is not equal to sending amount")]
+    NotEqual {},
 }
