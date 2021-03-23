@@ -7,7 +7,7 @@ use crate::error::ContractError;
 // use crate::msg::{ArbiterResponse, HandleMsg, InitMsg, QueryMsg};
 // use crate::state::{config, config_read, State};
 use crate::msg::{HandleMsg, InitMsg, QueryMsg};
-use crate::state::{RecipientInfo};
+use crate::state::RecipientInfo;
 
 pub fn init(
     deps: DepsMut,
@@ -43,32 +43,16 @@ pub fn handle(
     match msg {
         // HandleMsg::Approve { quantity } => try_approve(deps, env, state, info, quantity),
         // HandleMsg::Refund {} => try_refund(deps, env, info, state),
-        HandleMsg::Send { recipients } => try_send(deps, env, info, recipients),
+        HandleMsg::Send { recipients } => try_send(env, recipients),
     }
 }
 
-fn try_send(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-    recipients: Vec<RecipientInfo>,
-) -> Result<HandleResponse, ContractError> {
-    for recipient in recipients {
-        match recipient {
-            _ => send_tokens(
-                env.clone().contract.address,
-                recipient.clone().address,
-                recipient.clone().amount,
-                "send",
-            ),
-        };
-    }
-
-    Ok(HandleResponse {
-        messages: vec![],
-        data: None,
-        attributes: vec![],
-    })
+fn try_send(env: Env, recipients: Vec<RecipientInfo>) -> Result<HandleResponse, ContractError> {
+    send_tokens(
+        env.clone().contract.address,
+        recipients,
+        "send",
+    )
 }
 
 // fn try_approve(
@@ -133,18 +117,24 @@ fn try_send(
 // this is a helper to move the tokens, so the business logic is easy to read
 fn send_tokens(
     from_address: HumanAddr,
-    to_address: HumanAddr,
-    amount: Vec<Coin>,
+    recipients: Vec<RecipientInfo>,
     action: &str,
 ) -> Result<HandleResponse, ContractError> {
-    let attributes = vec![attr("action", action), attr("to", to_address.clone())];
+    let mut attributes = Vec::new();
+    let mut messages = Vec::new();
+
+    for recipient in recipients {
+        attributes.push(attr("action", action));
+        attributes.push(attr("to", recipient.clone().address));
+        messages.push(CosmosMsg::Bank(BankMsg::Send {
+            from_address: from_address.clone(),
+            to_address: recipient.clone().address,
+            amount: recipient.amount,
+        }));
+    }
 
     let r = HandleResponse {
-        messages: vec![CosmosMsg::Bank(BankMsg::Send {
-            from_address,
-            to_address,
-            amount,
-        })],
+        messages: messages,
         data: None,
         attributes,
     };
@@ -152,9 +142,7 @@ fn send_tokens(
 }
 
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
-    match msg {
-        
-    }
+    match msg {}
 }
 
 // pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
