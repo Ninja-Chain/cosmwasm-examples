@@ -3,5 +3,5 @@ mod error;
 pub mod msg;
 pub mod state;
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(all(target_arch = "wasm32", not(feature = "library")))]
 cosmwasm_std::create_entry_points!(contract);

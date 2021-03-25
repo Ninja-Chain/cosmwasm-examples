@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::state::{RecipientInfo};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct InitMsg {
+pub struct InstantiateMsg {
     // pub arbiter: HumanAddr,
 // pub recipient: HumanAddr,
 // /// When end height set and block height exceeds this value, the escrow is expired.

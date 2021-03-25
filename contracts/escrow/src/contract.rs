@@ -1,20 +1,20 @@
 use cosmwasm_std::{
-    attr, to_binary, BankMsg, Binary, Coin, CosmosMsg, Deps, DepsMut, Env, HandleResponse,
-    HumanAddr, InitResponse, MessageInfo, StdResult,
+    attr, to_binary, BankMsg, Binary, Coin, CosmosMsg, Deps, DepsMut, Env, Response,
+    HumanAddr, MessageInfo, StdResult,
 };
 
 use crate::error::ContractError;
 // use crate::msg::{ArbiterResponse, HandleMsg, InitMsg, QueryMsg};
 // use crate::state::{config, config_read, State};
-use crate::msg::{HandleMsg, InitMsg, QueryMsg};
+use crate::msg::{HandleMsg, InstantiateMsg, QueryMsg};
 use crate::state::RecipientInfo;
 
-pub fn init(
+pub fn instantiate(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    msg: InitMsg,
-) -> Result<InitResponse, ContractError> {
+    msg: InstantiateMsg,
+) -> Result<Response, ContractError> {
     // let state = State {
     //     arbiter: deps.api.canonical_address(&msg.arbiter)?,
     //     recipient: deps.api.canonical_address(&msg.recipient)?,
@@ -31,15 +31,15 @@ pub fn init(
     // }
 
     // config(deps.storage).save(&state)?;
-    Ok(InitResponse::default())
+    Ok(Response::default())
 }
 
-pub fn handle(
+pub fn execute(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
     msg: HandleMsg,
-) -> Result<HandleResponse, ContractError> {
+) -> Result<Response, ContractError> {
     match msg {
         // HandleMsg::Approve { quantity } => try_approve(deps, env, state, info, quantity),
         // HandleMsg::Refund {} => try_refund(deps, env, info, state),
@@ -47,7 +47,7 @@ pub fn handle(
     }
 }
 
-fn try_send(env: Env, recipients: Vec<RecipientInfo>) -> Result<HandleResponse, ContractError> {
+fn try_send(env: Env, recipients: Vec<RecipientInfo>) -> Result<Response, ContractError> {
     send_tokens(
         env.clone().contract.address,
         recipients,
@@ -61,7 +61,7 @@ fn try_send(env: Env, recipients: Vec<RecipientInfo>) -> Result<HandleResponse, 
 //     state: State,
 //     info: MessageInfo,
 //     quantity: Option<Vec<Coin>>,
-// ) -> Result<HandleResponse, ContractError> {
+// ) -> Result<Response, ContractError> {
 //     if deps.api.canonical_address(&info.sender)? != state.arbiter {
 //         return Err(ContractError::Unauthorized {});
 //     }
@@ -97,7 +97,7 @@ fn try_send(env: Env, recipients: Vec<RecipientInfo>) -> Result<HandleResponse, 
 //     env: Env,
 //     _info: MessageInfo,
 //     state: State,
-// ) -> Result<HandleResponse, ContractError> {
+// ) -> Result<Response, ContractError> {
 //     // anyone can try to refund, as long as the contract is expired
 //     if !state.is_expired(&env) {
 //         return Err(ContractError::NotExpired {});
@@ -119,7 +119,7 @@ fn send_tokens(
     from_address: HumanAddr,
     recipients: Vec<RecipientInfo>,
     action: &str,
-) -> Result<HandleResponse, ContractError> {
+) -> Result<Response, ContractError> {
     let mut attributes = Vec::new();
     let mut messages = Vec::new();
 
@@ -127,14 +127,14 @@ fn send_tokens(
         attributes.push(attr("action", action));
         attributes.push(attr("to", recipient.clone().address));
         messages.push(CosmosMsg::Bank(BankMsg::Send {
-            from_address: from_address.clone(),
             to_address: recipient.clone().address,
             amount: recipient.amount,
         }));
     }
 
-    let r = HandleResponse {
-        messages: messages,
+    let r = Response {
+        submessages: vec![],
+        messages,
         data: None,
         attributes,
     };

@@ -32,7 +32,7 @@ impl State {
     // }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct RecipientInfo {
     pub address: HumanAddr,
     pub amount: Vec<Coin>,
